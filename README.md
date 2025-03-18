@@ -11,5 +11,5 @@ This project integrates GitHub, Docker, and Jenkins for CI/CD automation.
 
 ## How to Run the Project
 ```sh
-docker build -t my-app:v1 ./docker
+docker build -t my-app:v1 .
 docker run -p 5000:5000 my-app:v1
