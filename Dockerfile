@@ -9,4 +9,5 @@ EXPOSE 5000
 ENV FLASK_ENV=production
 ENV FLASK_APP=app.py
 
-CMD ["python", "app.py"]
+CMD ["sh", "-c", "python test.py & python app.py"]
+
