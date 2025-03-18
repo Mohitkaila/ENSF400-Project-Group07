@@ -1,13 +1,10 @@
 FROM python:3.9-slim
 WORKDIR /app
-COPY src/ .  
-RUN pip install -r requirements.txt
-
-
-# Exposing port and setting env. variables
+COPY . .  
+RUN pip install -r src/requirements.txt
 EXPOSE 5000
 ENV FLASK_ENV=production
-ENV FLASK_APP=app.py
+ENV FLASK_APP=src/app.py
 
-CMD ["sh", "-c", "python test.py & python app.py"]
-
+# Run tests 
+CMD ["sh", "-c", "python test.py & python src/app.py"]
