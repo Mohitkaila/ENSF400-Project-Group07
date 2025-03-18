@@ -12,8 +12,14 @@ This project integrates GitHub, Docker, and Jenkins for CI/CD automation.
 
 ### How to Run the Project
 ```sh
-docker build -t my-app:v1 .
-docker run -p 5000:5000 my-app:v1
+
+# latest commit hash
+COMMIT_HASH=$(git rev-parse --short HEAD)
+
+# Build and run the image
+docker build -t mohitkaila/my-app:$COMMIT_HASH .
+docker run -p 5000:5000 mohitkaila/my-app:$COMMIT_HASH
+
 
 ### How to Run SonarQube
 docker run -d --name sonarqube -p 9000:9000 sonarqube:lts
