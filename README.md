@@ -1,15 +1,16 @@
-# ENSF400-Project-Group07
-
-## Docker Image
-
+ENSF400-Project-Group07
+Docker Image
 This project is available as a Docker image on Docker Hub.
 
-**Pull the image:**
-```bash
+Pull the image:
+
+bash
+Copy
+Edit
 docker pull mohitkaila/ensf400-group7-app
 Run the container:
 
-bash
+arduino
 Copy
 Edit
 docker run -p 5000:5000 mohitkaila/ensf400-group7-app
@@ -18,43 +19,50 @@ Overview
 This project integrates GitHub, Docker, and Jenkins for CI/CD automation.
 
 Git Workflow
-Branching: Feature branches for development.
+Branching: Feature branches for development
 
-Pull Requests: All changes go through PRs before merging.
+Pull Requests: All changes go through PRs before merging
 
-Code Reviews: At least one team member must approve a PR.
+Code Reviews: At least one team member must approve a PR
 
 How to Run the Project
+Get the latest commit hash:
+
+ini
+Copy
+Edit
+COMMIT_HASH=$(git rev-parse --short HEAD)
+Build and run the image:
+
 bash
 Copy
 Edit
-# latest commit hash
-COMMIT_HASH=$(git rev-parse --short HEAD)
-
-# Build and run the image
 docker build -t mohitkaila/my-app:$COMMIT_HASH .
 docker run -p 5000:5000 mohitkaila/my-app:$COMMIT_HASH
 How to Run SonarQube
-bash
+Start SonarQube:
+
+css
 Copy
 Edit
 docker run -d --name sonarqube -p 9000:9000 sonarqube:lts
-If an existing docker container for SonarQube exists, stop and remove it:
+If a container already exists:
 
-bash
+arduino
 Copy
 Edit
 docker stop sonarqube
 docker rm sonarqube
-Then run SonarQube again:
+Then restart it:
 
-bash
+css
 Copy
 Edit
 docker run -d --name sonarqube -p 9000:9000 sonarqube:lts
-Open your browser and go to:
+Visit SonarQube in your browser at:
 
 arduino
 Copy
 Edit
 http://localhost:9000
+You’ll see the login page.
