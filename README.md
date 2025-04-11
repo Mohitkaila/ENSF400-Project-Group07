@@ -4,7 +4,7 @@
 
 This project is available as a Docker image on Docker Hub.
 
-Pull the image:
+**Pull the image:**
 ```bash
 docker pull mohitkaila/ensf400-group7-app
 Run the container:
@@ -25,7 +25,7 @@ Pull Requests: All changes go through PRs before merging.
 Code Reviews: At least one team member must approve a PR.
 
 How to Run the Project
-sh
+bash
 Copy
 Edit
 # latest commit hash
@@ -35,23 +35,26 @@ COMMIT_HASH=$(git rev-parse --short HEAD)
 docker build -t mohitkaila/my-app:$COMMIT_HASH .
 docker run -p 5000:5000 mohitkaila/my-app:$COMMIT_HASH
 How to Run SonarQube
-sh
+bash
 Copy
 Edit
 docker run -d --name sonarqube -p 9000:9000 sonarqube:lts
-If an existing docker container for SonarQube exists, it will give an error so run this command:
+If an existing docker container for SonarQube exists, stop and remove it:
 
-sh
+bash
 Copy
 Edit
 docker stop sonarqube
 docker rm sonarqube
-After that, run this command again:
+Then run SonarQube again:
 
-sh
+bash
 Copy
 Edit
 docker run -d --name sonarqube -p 9000:9000 sonarqube:lts
-The container starts and lets us see port 9000 on browser. This port has our running SonarQube.
-We can access this manually too by running this: http://localhost:9000 on browser.
-It should prompt you to see login page.
+Open your browser and go to:
+
+arduino
+Copy
+Edit
+http://localhost:9000
