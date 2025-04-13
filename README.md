@@ -1,36 +1,79 @@
 # ENSF400-Project-Group07
 
+## Docker Image
+
+This project is available as a Docker image on Docker Hub.
+
+**Pull the image:**
+
+```bash
+docker pull mohitkaila/ensf400-group7-app
+```
+
+**Run the container:**
+
+```bash
+docker pull mohitkaila/ensf400-group7-app
+```
+
+---
+
 ## ENSF 400 Project - CI/CD Pipeline
 
 ### Overview
+
 This project integrates GitHub, Docker, and Jenkins for CI/CD automation.
 
 ### Git Workflow
-1. *Branching*: Feature branches for development.
-2. *Pull Requests*: All changes go through PRs before merging.
-3. *Code Reviews*: At least one team member must approve a PR.
+
+1. **Branching**: Feature branches for development  
+2. **Pull Requests**: All changes go through PRs before merging  
+3. **Code Reviews**: At least one team member must approve a PR
+
+---
 
 ### How to Run the Project
-```sh
 
-# latest commit hash
+Get the latest commit hash:
+
+```bash
 COMMIT_HASH=$(git rev-parse --short HEAD)
+```
 
-# Build and run the image
+Build and run the image:
+
+```bash
 docker build -t mohitkaila/my-app:$COMMIT_HASH .
 docker run -p 5000:5000 mohitkaila/my-app:$COMMIT_HASH
+```
 
+---
 
 ### How to Run SonarQube
-docker run -d --name sonarqube -p 9000:9000 sonarqube:lts
 
-If an existing docker container for SonarQube exists, it will give an error so run this command: 
+Start SonarQube:
+
+```bash
+docker run -d --name sonarqube -p 9000:9000 sonarqube:lts
+```
+
+If a container already exists, stop and remove it:
+
+```bash
 docker stop sonarqube
 docker rm sonarqube
+```
 
-After that, run this command again:-
-docker run -d --name sonarqube -p 9000:9000 sonarqube:lts 
+Then restart SonarQube:
 
-The conatiner starts and lets us see port 9000 on browser. This port has our running SonarQube. 
-We can access this manually too by running this: http://localhost:9000 on browser.
-It should prompt you to see login page.
+```bash
+docker run -d --name sonarqube -p 9000:9000 sonarqube:lts
+```
+
+Open your browser and go to:
+
+```
+http://localhost:9000
+```
+
+You should see the SonarQube login page.

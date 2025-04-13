@@ -1,28 +1,35 @@
 pipeline {
     agent any
+
     stages {
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/Mohitkaila/ENSF400_Project.git'
-            }
-        }
         stage('Build Docker Image') {
             steps {
-                script {
-                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    def imageName = "mohitkaila/my-app:${commitHash}"
-                    sh "docker build -t ${imageName} ."
-                }
+                echo 'Building Docker image...'
+                sh 'docker build -t ensf400-group7-app .'
             }
         }
-        stage('Push to Registry') {
+
+        stage('Run Unit Tests') {
             steps {
-                withDockerRegistry([credentialsId: 'docker-hub', url: 'https://index.docker.io/v1/']) {
-                    script {
-                        def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                        def imageName = "mohitkaila/my-app:${commitHash}"
-                        sh "docker push ${imageName}"
-                    }
+                echo 'Running unit tests...'
+                sh 'python3 -m unittest test.py'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            environment {
+                SONAR_TOKEN = credentials('sonar-token')
+            }
+            steps {
+                echo 'Running SonarQube analysis...'
+                withSonarQubeEnv('My SonarQube Server') {
+                    sh '''
+                        sonar-scanner \
+                          -Dsonar.projectKey=ensf400-group7 \
+                          -Dsonar.sources=src \
+                          -Dsonar.host.url=http://localhost:9000 \
+                          -Dsonar.login=$SONAR_TOKEN
+                    '''
                 }
             }
         }
