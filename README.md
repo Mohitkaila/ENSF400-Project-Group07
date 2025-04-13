@@ -13,7 +13,7 @@ docker pull mohitkaila/ensf400-group7-app
 **Run the container:**
 
 ```bash
-docker run -p 5000:5000 mohitkaila/ensf400-group7-app
+docker pull mohitkaila/ensf400-group7-app
 ```
 
 ---
