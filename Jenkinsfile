@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/Mohitkaila/ENSF400_Project.git'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    def imageName = "mohitkaila/my-app:${commitHash}"
+                    sh "docker build -t ${imageName} ."
+                }
+            }
+        }
+        stage('Push to Registry') {
+            steps {
+                withDockerRegistry([credentialsId: 'docker-hub', url: 'https://index.docker.io/v1/']) {
+                    script {
+                        def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                        def imageName = "mohitkaila/my-app:${commitHash}"
+                        sh "docker push ${imageName}"
+                    }
+                }
+            }
+        }
+    }
+}
