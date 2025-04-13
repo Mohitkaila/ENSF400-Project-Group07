@@ -6,6 +6,7 @@ pipeline {
                 git 'https://github.com/Mohitkaila/ENSF400_Project.git'
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 script {
@@ -15,6 +16,14 @@ pipeline {
                 }
             }
         }
+
+        stage('Run Unit Tests') {
+            steps {
+                sh 'pip install requests'
+                sh 'python3 test.py'
+            }
+        }
+
         stage('Push to Registry') {
             steps {
                 withDockerRegistry([credentialsId: 'docker-hub', url: 'https://index.docker.io/v1/']) {
