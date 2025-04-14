@@ -19,14 +19,15 @@ pipeline {
         }
 
         stage('Run Unit Tests') {
-            steps {
-                echo 'Running unit tests inside Docker...'
-                sh '''
-                    SHORT_COMMIT=$(echo $GIT_COMMIT | cut -c1-7)
-                    docker run --rm $DOCKER_HUB_USER/$IMAGE_NAME:$SHORT_COMMIT python -m unittest discover -s tests
-                '''
-            }
-        }
+    steps {
+        echo 'Running test.py inside Docker...'
+        sh '''
+            SHORT_COMMIT=$(echo $GIT_COMMIT | cut -c1-7)
+            docker run --rm mohitkaila/ensf400-group7-app:$SHORT_COMMIT python test.py
+        '''
+    }
+}
+
 
         stage('Push to Registry') {
             steps {
