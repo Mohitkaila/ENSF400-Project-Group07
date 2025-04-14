@@ -19,14 +19,18 @@ pipeline {
         }
 
         stage('Run Unit Tests') {
-    steps {
-        echo 'Running test.py inside Docker...'
-        sh '''
-            SHORT_COMMIT=$(echo $GIT_COMMIT | cut -c1-7)
-            docker run --rm mohitkaila/ensf400-group7-app:$SHORT_COMMIT python test.py
-        '''
-    }
+  steps {
+    echo 'Running test.py inside Docker...'
+    sh '''
+      SHORT_COMMIT=$(git rev-parse --short HEAD)
+      docker run -d -p 5000:5000 --name app-test mohitkaila/ensf400-group7-app:$SHORT_COMMIT
+      sleep 5
+      docker exec app-test python test.py
+      docker stop app-test
+    '''
+  }
 }
+
 
 
         stage('Push to Registry') {
