@@ -1,52 +1,63 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials')
-        GITHUB_WEBHOOK_SECRET = credentials('webhook-key')
+  environment {
+    DOCKER_IMAGE = "mohitkaila/ensf400-group7-app"
+    COMMIT_HASH = ""
+  }
+
+  stages {
+    stage('Checkout Code') {
+      steps {
+        echo 'Checking out source code...'
+        checkout scm
+        script {
+          COMMIT_HASH = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+        }
+      }
     }
 
-    stages {
-        stage('Build Docker Image') {
-            steps {
-                echo 'Building Docker image...'
-                script {
-                    def commitId = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    sh "docker build -t mohitkaila/ensf400-group7-app:${commitId} ."
-                    sh "docker tag mohitkaila/ensf400-group7-app:${commitId} mohitkaila/ensf400-group7-app:latest"
-                }
-            }
+    stage('Build Docker Image') {
+      steps {
+        echo 'Building Docker image...'
+        script {
+          sh """
+            docker build -t $DOCKER_IMAGE:${COMMIT_HASH} .
+            docker tag $DOCKER_IMAGE:${COMMIT_HASH} $DOCKER_IMAGE:latest
+          """
         }
-
-        stage('Run Unit Tests') {
-            steps {
-                echo 'Running test.py against live Flask container...'
-                script {
-                    def commitId = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    sh "docker rm -f app-test || true"
-                    sh "docker run -d -p 5000:5000 --name app-test mohitkaila/ensf400-group7-app:${commitId}"
-                    sleep(time: 5, unit: 'SECONDS')
-                    sh "docker exec app-test python3 test.py"
-                    sh "docker rm -f app-test"
-                }
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            environment {
-                scannerHome = tool 'SonarScanner'
-            }
-            steps {
-                withSonarQubeEnv('SonarQubeServer') {
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=ensf400 -Dsonar.sources=. -Dsonar.python.version=3.9"
-                }
-            }
-        }
+      }
     }
 
-    post {
-        failure {
-            echo 'Pipeline failed. Check the logs above.'
+    stage('Run Unit Tests') {
+      steps {
+        echo 'Running test.py against live Flask container...'
+        script {
+          sh "docker rm -f app-test || true"
+          sh "docker run -d -p 5000:5000 --name app-test $DOCKER_IMAGE:${COMMIT_HASH}"
+          sleep time: 5, unit: 'SECONDS'
+          sh "docker exec app-test python3 test.py"
+          sh "docker stop app-test"
         }
+      }
     }
+
+    stage('Static Code Analysis') {
+      environment {
+        scannerHome = tool 'SonarScanner'
+      }
+      steps {
+        echo 'Running SonarQube analysis...'
+        withSonarQubeEnv('SonarQubeServer') {
+          sh "${scannerHome}/bin/sonar-scanner"
+        }
+      }
+    }
+  }
+
+  post {
+    failure {
+      echo 'Pipeline failed. Check the logs above.'
+    }
+  }
 }
