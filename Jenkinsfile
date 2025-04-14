@@ -1,49 +1,39 @@
 pipeline {
     agent any
-    stages {
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/Rakshu-sys/ENSF400-Project-Group07'
-            }
-        }
 
+    environment {
+        DOCKER_HUB_USER = "mohitkaila"
+    }
+
+    stages {
         stage('Build Docker Image') {
             steps {
-                script {
-                    def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    def imageName = "mohitkaila/my-app:${commitHash}"
-                    sh "docker build -t ${imageName} ."
-                }
+                echo 'Building Docker image...'
+                sh '''
+                    COMMIT_HASH=$(git rev-parse --short HEAD)
+                    docker build -t $DOCKER_HUB_USER/ensf400-group7-app:$COMMIT_HASH .
+                '''
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                // Installing necessary dependencies
-                sh 'pip install requests'
-                sh 'python3 test.py'
+                echo 'Running unit tests...'
+                sh 'python3 -m unittest test.py'
             }
         }
 
         stage('Push to Registry') {
             steps {
-                withDockerRegistry([credentialsId: 'docker-hub', url: 'https://index.docker.io/v1/']) {
-                    script {
-                        def commitHash = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                        def imageName = "mohitkaila/my-app:${commitHash}"
-                        sh "docker push ${imageName}"
-                    }
+                echo 'Pushing Docker image to Docker Hub...'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        COMMIT_HASH=$(git rev-parse --short HEAD)
+                        docker push $DOCKER_HUB_USER/ensf400-group7-app:$COMMIT_HASH
+                    '''
                 }
             }
         }
     }
-
-    // To trigger the webhook manually, follow these steps:
-    // 1. Push changes to the feature branch.
-    // 2. Create a pull request to the main branch.
-    // 3. This action should trigger the webhook and Jenkins should start building.
-    // Check Jenkins logs for build details after the PR is created.
-
-    // If the webhook isn't triggered, check GitHub Settings > Webhooks for issues or test the webhook again.
 }
-git 
