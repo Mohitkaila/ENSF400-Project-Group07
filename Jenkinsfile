@@ -1,13 +1,8 @@
 pipeline {
     agent any
 
-    triggers {
-        githubPush()
-    }
-
     environment {
         GITHUB_WEBHOOK_SECRET = credentials('webhook')
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
     }
 
     stages {
@@ -22,9 +17,10 @@ pipeline {
             steps {
                 echo "Building Docker image..."
                 script {
-                    def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    sh "docker build -t mohitkaila/ensf400-group7-app:${COMMIT_HASH} ."
-                    sh "docker tag mohitkaila/ensf400-group7-app:${COMMIT_HASH} mohitkaila/ensf400-group7-app:latest"
+                    def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    env.COMMIT_HASH = commitHash
+                    sh "docker build -t mohitkaila/ensf400-group7-app:${commitHash} ."
+                    sh "docker tag mohitkaila/ensf400-group7-app:${commitHash} mohitkaila/ensf400-group7-app:latest"
                 }
             }
         }
@@ -33,7 +29,6 @@ pipeline {
             steps {
                 echo "Running test.py inside Docker..."
                 script {
-                    def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     sh "docker run --rm mohitkaila/ensf400-group7-app:${COMMIT_HASH} python test.py"
                 }
             }
@@ -42,19 +37,17 @@ pipeline {
         stage('Push to Registry') {
             steps {
                 echo "Pushing Docker image to Docker Hub..."
-                script {
-                    def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                        sh "docker push mohitkaila/ensf400-group7-app:${COMMIT_HASH}"
-                        sh "docker push mohitkaila/ensf400-group7-app:latest"
-                    }
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
+                    sh "docker push mohitkaila/ensf400-group7-app:${COMMIT_HASH}"
+                    sh "docker push mohitkaila/ensf400-group7-app:latest"
                 }
             }
         }
 
         stage('Debug Webhook Secret') {
             steps {
+                echo "Webhook secret successfully loaded."
                 echo "Webhook secret length: ${GITHUB_WEBHOOK_SECRET.length()}"
             }
         }
