@@ -94,7 +94,7 @@ You should see the SonarQube login page.
 ###
 
 ### Team Collaboration & Workflow
-Throughout the development of this project, our team — Shalin, Mohit, and Rakshita — followed a structured and collaborative approach to ensure smooth progress and maintain high code quality.
+Throughout the development of this project, our team, Shalin, Mohit, and Rakshita followed a structured and collaborative approach to ensure smooth progress and maintain high code quality.
 
 ### Git Workflow
 We adopted a GitHub-based workflow using the following practices:
@@ -108,11 +108,11 @@ Configured Jenkins webhooks to trigger automatic builds and analysis on every PR
 Ensured all PRs passed Docker build, unit test, and SonarQube analysis before merging to main
 
 ### Task Distribution
-Shalin was responsible for setting up Jenkins in GitHub Codespaces, configuring GitHub webhooks, and managing CI pipeline jobs.
+Rakshita was responsible for setting up Jenkins in GitHub Codespaces, configuring GitHub webhooks, and managing CI pipeline jobs.
 
 Mohit focused on containerizing the application using Docker, writing unit tests, and configuring the push to Docker Hub.
 
-Rakshita handled the integration of SonarQube, configured the quality gate, and ensured successful static analysis reporting in the pipeline.
+Shalin handled the integration of SonarQube, configured the quality gate, and ensured successful static analysis reporting in the pipeline.
 
 ### Coordination & Communication
 Held weekly meetings to review progress and discuss blockers
