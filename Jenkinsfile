@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Rakshu-sys/ENSF400_Project.git'
+                git 'https://github.com/Rakshu-sys/ENSF400-Project-Group07'
             }
         }
 
