@@ -1,70 +1,67 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    IMAGE_NAME = 'mohitkaila/ensf400-group7-app'
-    DOCKER_IMAGE = ''
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+    environment {
+        SHORT_COMMIT = ''
+        DOCKER_IMAGE = ''
     }
 
-    stage('Build Docker Image') {
-      steps {
-        script {
-          echo 'Building Docker image...'
-          def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-          env.DOCKER_IMAGE = "${IMAGE_NAME}:${commit}"
-          sh """
-            docker build -t ${DOCKER_IMAGE} .
-            docker tag ${DOCKER_IMAGE} ${IMAGE_NAME}:latest
-          """
+    triggers {
+        githubPush()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
         }
-      }
-    }
 
-    stage('Run Unit Tests') {
-      steps {
-        script {
-          echo 'Running test.py inside Docker...'
-          sh '''
-            docker rm -f app-test || true
-            docker run -d -p 5000:5000 --name app-test ${DOCKER_IMAGE}
-            sleep 5
-            docker exec app-test python test.py || (docker logs app-test && exit 1)
-          '''
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image..."
+                    SHORT_COMMIT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    DOCKER_IMAGE = "mohitkaila/ensf400-group7-app:${SHORT_COMMIT}"
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                    sh "docker tag ${DOCKER_IMAGE} mohitkaila/ensf400-group7-app:latest"
+                }
+            }
         }
-      }
-    }
 
-    stage('Push to Registry') {
-      when {
-        expression { currentBuild.currentResult == 'SUCCESS' }
-      }
-      steps {
-        echo 'Pushing Docker image to Docker Hub...'
-        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh '''
-            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            docker push ${DOCKER_IMAGE}
-            docker push ${IMAGE_NAME}:latest
-          '''
+        stage('Run Unit Tests') {
+            steps {
+                script {
+                    echo "Running test.py inside Docker..."
+                    sh "docker rm -f app-test || true"
+                    sh "docker run -d -p 5000:5000 --name app-test ${DOCKER_IMAGE}"
+                    sh "sleep 5"
+                    sh "docker exec app-test python test.py || true"
+                }
+            }
         }
-      }
-    }
-  }
 
-  post {
-    always {
-      echo 'Cleaning up Docker...'
-      sh 'docker rm -f app-test || true'
+        stage('Push to Registry') {
+            when {
+                expression { return env.DOCKER_HUB_CREDENTIALS != null }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
+                    sh "echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin"
+                    sh "docker push ${DOCKER_IMAGE}"
+                    sh "docker push mohitkaila/ensf400-group7-app:latest"
+                }
+            }
+        }
     }
-    failure {
-      echo 'Build failed. Please check logs.'
+
+    post {
+        always {
+            echo "Cleaning up Docker..."
+            sh "docker rm -f app-test || true"
+        }
+        failure {
+            echo 'Build failed. Please check logs.'
+        }
     }
-  }
 }
