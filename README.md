@@ -1,18 +1,16 @@
 # ENSF400-Project-Group07
 
 Project Overview
+
 This project demonstrates the implementation of a complete CI/CD pipeline for a sample application, utilizing GitHub for source control, Docker for containerization, and Jenkins for automation. The pipeline ensures that every code change is automatically validated through container builds, unit tests, code quality checks, and end-to-end functional tests.
 
-Technologies Used
-Version Control: Git & GitHub
+Technologies Used:
 
-Containerization: Docker
-
-Continuous Integration/Continuous Deployment: Jenkins
-
-Static Code Analysis: SonarQube
-
-Testing Framework: unittest (Python)
+- Version Control: Git & GitHub
+- Containerization: Docker
+- Continuous Integration/Continuous Deployment: Jenkins
+- Static Code Analysis: SonarQube
+- Testing Framework: unittest (Python)
 
 ## Docker Image
 
