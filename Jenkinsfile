@@ -7,14 +7,12 @@ pipeline {
 
     stages {
         stage('Build Docker Image') {
-            steps {
-                echo 'Building Docker image...'
-                sh '''
-                    COMMIT_HASH=$(git rev-parse --short HEAD)
-                    docker build -t $DOCKER_HUB_USER/ensf400-group7-app:$COMMIT_HASH .
-                '''
-            }
-        }
+    steps {
+        echo 'Building Docker image...'
+        sh 'docker build -t mohitkaila/ensf400-group7-app:latest .'
+    }
+}
+
 
         stage('Run Unit Tests') {
             steps {
