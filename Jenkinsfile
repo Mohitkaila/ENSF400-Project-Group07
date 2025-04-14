@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_WEBHOOK_SECRET = credentials('github-webhook-secret')
+        GITHUB_WEBHOOK_SECRET = credentials('webhook')
     }
 
     stages {
