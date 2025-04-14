@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials')
-        GITHUB_WEBHOOK_SECRET = credentials('webhook')
+        GITHUB_WEBHOOK_SECRET = credentials('webhook-key')
     }
 
     stages {
