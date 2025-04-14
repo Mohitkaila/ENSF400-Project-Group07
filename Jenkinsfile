@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         GITHUB_WEBHOOK_SECRET = credentials('webhook')
+        DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials')
     }
 
     stages {
@@ -18,7 +19,6 @@ pipeline {
                 echo "Building Docker image..."
                 script {
                     def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    env.COMMIT_HASH = commitHash
                     sh "docker build -t mohitkaila/ensf400-group7-app:${commitHash} ."
                     sh "docker tag mohitkaila/ensf400-group7-app:${commitHash} mohitkaila/ensf400-group7-app:latest"
                 }
@@ -29,7 +29,8 @@ pipeline {
             steps {
                 echo "Running test.py inside Docker..."
                 script {
-                    sh "docker run --rm mohitkaila/ensf400-group7-app:${COMMIT_HASH} python test.py"
+                    def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    sh "docker run --rm mohitkaila/ensf400-group7-app:${commitHash} python test.py"
                 }
             }
         }
@@ -37,9 +38,10 @@ pipeline {
         stage('Push to Registry') {
             steps {
                 echo "Pushing Docker image to Docker Hub..."
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
-                    sh "docker push mohitkaila/ensf400-group7-app:${COMMIT_HASH}"
+                script {
+                    sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+                    def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    sh "docker push mohitkaila/ensf400-group7-app:${commitHash}"
                     sh "docker push mohitkaila/ensf400-group7-app:latest"
                 }
             }
@@ -47,18 +49,17 @@ pipeline {
 
         stage('Debug Webhook Secret') {
             steps {
-                echo "Webhook secret successfully loaded."
                 echo "Webhook secret length: ${GITHUB_WEBHOOK_SECRET.length()}"
             }
         }
     }
 
     post {
-        failure {
-            echo "Pipeline failed. Check the logs above."
-        }
         success {
             echo "Pipeline executed successfully."
+        }
+        failure {
+            echo "Pipeline failed. Check the logs above."
         }
     }
 }
