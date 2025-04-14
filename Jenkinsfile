@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Mohitkaila/ENSF400_Project.git'
+                git 'https://github.com/Rakshu-sys/ENSF400-Project-Group07.git'
             }
         }
 
@@ -46,4 +46,3 @@ pipeline {
 
     // If the webhook isn't triggered, check GitHub Settings > Webhooks for issues or test the webhook again.
 }
-git 
