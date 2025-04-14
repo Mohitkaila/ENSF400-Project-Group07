@@ -1,9 +1,13 @@
 pipeline {
     agent any
 
+    triggers {
+        githubPush()
+    }
+
     environment {
         GITHUB_WEBHOOK_SECRET = credentials('webhook')
-        DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials')
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
     }
 
     stages {
@@ -26,36 +30,31 @@ pipeline {
         }
 
         stage('Run Unit Tests') {
-    steps {
-        echo "Running test.py inside Docker..."
-        script {
-            def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-            sh """
-                docker run -d -p 5000:5000 --name app-test mohitkaila/ensf400-group7-app:${COMMIT_HASH}
-                sleep 5
-                docker exec app-test python test.py
-                docker rm -f app-test
-            """
+            steps {
+                echo "Running test.py inside Docker..."
+                script {
+                    def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    sh "docker run --rm mohitkaila/ensf400-group7-app:${COMMIT_HASH} python test.py"
+                }
+            }
         }
-    }
-}
-
 
         stage('Push to Registry') {
             steps {
                 echo "Pushing Docker image to Docker Hub..."
                 script {
                     def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
-                    sh "docker push mohitkaila/ensf400-group7-app:${COMMIT_HASH}"
-                    sh "docker push mohitkaila/ensf400-group7-app:latest"
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                        sh "docker push mohitkaila/ensf400-group7-app:${COMMIT_HASH}"
+                        sh "docker push mohitkaila/ensf400-group7-app:latest"
+                    }
                 }
             }
         }
 
         stage('Debug Webhook Secret') {
             steps {
-                echo "Webhook secret successfully loaded."
                 echo "Webhook secret length: ${GITHUB_WEBHOOK_SECRET.length()}"
             }
         }
