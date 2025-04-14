@@ -51,7 +51,7 @@ pipeline {
             }
         }
 
-        stage('Debug Webhook Secret') {
+        stage('Running SonarQube') {
             steps {
                 echo "Webhook secret loaded."
                 echo "Length: ${GITHUB_WEBHOOK_SECRET.length()}"
