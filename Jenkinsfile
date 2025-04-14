@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_USER = 'mohitkaila' // Replace with your actual Docker Hub username
+        DOCKER_HUB_USER = 'mohitkaila'
         IMAGE_NAME = 'ensf400-group7-app'
     }
 
@@ -11,9 +11,8 @@ pipeline {
             steps {
                 echo 'Building Docker image...'
                 sh '''
-                    COMMIT_HASH=$(git rev-parse --short HEAD)
-                    docker build -t $DOCKER_HUB_USER/$IMAGE_NAME:$COMMIT_HASH .
-                    docker tag $DOCKER_HUB_USER/$IMAGE_NAME:$COMMIT_HASH $DOCKER_HUB_USER/$IMAGE_NAME:latest
+                    docker build -t $DOCKER_HUB_USER/$IMAGE_NAME:${GIT_COMMIT::7} .
+                    docker tag $DOCKER_HUB_USER/$IMAGE_NAME:${GIT_COMMIT::7} $DOCKER_HUB_USER/$IMAGE_NAME:latest
                 '''
             }
         }
@@ -28,11 +27,14 @@ pipeline {
         stage('Push to Registry') {
             steps {
                 echo 'Pushing Docker image to Docker Hub...'
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-credentials',
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
+                )]) {
                     sh '''
                         echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
-                        COMMIT_HASH=$(git rev-parse --short HEAD)
-                        docker push $DOCKER_HUB_USER/$IMAGE_NAME:$COMMIT_HASH
+                        docker push $DOCKER_HUB_USER/$IMAGE_NAME:${GIT_COMMIT::7}
                         docker push $DOCKER_HUB_USER/$IMAGE_NAME:latest
                     '''
                 }
