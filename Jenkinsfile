@@ -18,7 +18,7 @@ pipeline {
             steps {
                 echo "Building Docker image..."
                 script {
-                    COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     sh "docker build -t mohitkaila/ensf400-group7-app:${COMMIT_HASH} ."
                     sh "docker tag mohitkaila/ensf400-group7-app:${COMMIT_HASH} mohitkaila/ensf400-group7-app:latest"
                 }
@@ -29,6 +29,7 @@ pipeline {
             steps {
                 echo "Running test.py inside Docker..."
                 script {
+                    def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     sh "docker run --rm mohitkaila/ensf400-group7-app:${COMMIT_HASH} python test.py"
                 }
             }
@@ -38,6 +39,7 @@ pipeline {
             steps {
                 echo "Pushing Docker image to Docker Hub..."
                 script {
+                    def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                     sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
                     sh "docker push mohitkaila/ensf400-group7-app:${COMMIT_HASH}"
                     sh "docker push mohitkaila/ensf400-group7-app:latest"
@@ -55,10 +57,10 @@ pipeline {
 
     post {
         failure {
-            echo "❌ Pipeline failed. Check the logs above."
+            echo "Pipeline failed. Check the logs above."
         }
         success {
-            echo "✅ Pipeline executed successfully."
+            echo "Pipeline executed successfully."
         }
     }
 }
