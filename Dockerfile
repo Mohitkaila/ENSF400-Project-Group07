@@ -7,4 +7,6 @@ ENV FLASK_ENV=production
 ENV FLASK_APP=src/app.py
 
 # Run tests 
-CMD ["sh", "-c", "python test.py & python src/app.py"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
+
+
