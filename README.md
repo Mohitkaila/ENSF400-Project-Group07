@@ -76,4 +76,4 @@ Open your browser and go to:
 http://localhost:9000
 ```
 
-You should see the SonarQube login page.
+You should see the SonarQube login page
