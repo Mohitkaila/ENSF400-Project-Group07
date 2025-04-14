@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         GITHUB_WEBHOOK_SECRET = credentials('webhook')
+        DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials')
     }
 
     stages {
@@ -17,25 +18,37 @@ pipeline {
             steps {
                 echo "Building Docker image..."
                 script {
-                    def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    sh "docker build -t mohitkaila/ensf400-group7-app:${commitHash} ."
+                    def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    sh "docker build -t mohitkaila/ensf400-group7-app:${COMMIT_HASH} ."
+                    sh "docker tag mohitkaila/ensf400-group7-app:${COMMIT_HASH} mohitkaila/ensf400-group7-app:latest"
                 }
             }
         }
 
         stage('Run Unit Tests') {
-            steps {
-                echo "Running unit tests..."
-                sh "echo 'Tests passed!'"
-            }
+    steps {
+        echo "Running test.py inside Docker..."
+        script {
+            def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+            sh """
+                docker run -d -p 5000:5000 --name app-test mohitkaila/ensf400-group7-app:${COMMIT_HASH}
+                sleep 5
+                docker exec app-test python test.py
+                docker rm -f app-test
+            """
         }
+    }
+}
+
 
         stage('Push to Registry') {
             steps {
                 echo "Pushing Docker image to Docker Hub..."
                 script {
-                    def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    sh "docker push mohitkaila/ensf400-group7-app:${commitHash}"
+                    def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+                    sh "docker push mohitkaila/ensf400-group7-app:${COMMIT_HASH}"
+                    sh "docker push mohitkaila/ensf400-group7-app:latest"
                 }
             }
         }
@@ -50,7 +63,7 @@ pipeline {
 
     post {
         failure {
-            echo "Pipeline failed. Check logs above."
+            echo "Pipeline failed. Check the logs above."
         }
         success {
             echo "Pipeline executed successfully."
