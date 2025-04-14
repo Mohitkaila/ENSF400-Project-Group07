@@ -33,7 +33,7 @@ pipeline {
                     sh "docker rm -f app-test || true"
                     sh "docker run -d -p 5000:5000 --name app-test mohitkaila/ensf400-group7-app:${commitHash}"
                     sleep 5
-                    sh "python3 test.py"
+                    sh "docker exec app-test python3 test.py"
                     sh "docker rm -f app-test"
                 }
             }
