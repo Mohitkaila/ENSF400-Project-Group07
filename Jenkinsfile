@@ -11,8 +11,9 @@ pipeline {
             steps {
                 echo 'Building Docker image...'
                 sh '''
-                    docker build -t $DOCKER_HUB_USER/$IMAGE_NAME:${GIT_COMMIT::7} .
-                    docker tag $DOCKER_HUB_USER/$IMAGE_NAME:${GIT_COMMIT::7} $DOCKER_HUB_USER/$IMAGE_NAME:latest
+                    SHORT_COMMIT=$(echo $GIT_COMMIT | cut -c1-7)
+                    docker build -t $DOCKER_HUB_USER/$IMAGE_NAME:$SHORT_COMMIT .
+                    docker tag $DOCKER_HUB_USER/$IMAGE_NAME:$SHORT_COMMIT $DOCKER_HUB_USER/$IMAGE_NAME:latest
                 '''
             }
         }
@@ -34,7 +35,8 @@ pipeline {
                 )]) {
                     sh '''
                         echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
-                        docker push $DOCKER_HUB_USER/$IMAGE_NAME:${GIT_COMMIT::7}
+                        SHORT_COMMIT=$(echo $GIT_COMMIT | cut -c1-7)
+                        docker push $DOCKER_HUB_USER/$IMAGE_NAME:$SHORT_COMMIT
                         docker push $DOCKER_HUB_USER/$IMAGE_NAME:latest
                     '''
                 }
