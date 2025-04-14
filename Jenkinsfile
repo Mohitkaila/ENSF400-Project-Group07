@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Rakshu-sys/ENSF400-Project-Group07'
+                git 'https://github.com/Mohitkaila/ENSF400_Project.git'
             }
         }
 
@@ -14,14 +14,6 @@ pipeline {
                     def imageName = "mohitkaila/my-app:${commitHash}"
                     sh "docker build -t ${imageName} ."
                 }
-            }
-        }
-
-        stage('Run Unit Tests') {
-            steps {
-                // Installing necessary dependencies
-                sh 'pip install requests'
-                sh 'python3 test.py'
             }
         }
 
@@ -36,14 +28,27 @@ pipeline {
                 }
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+                        unzip sonar-scanner.zip
+                        mv sonar-scanner-* sonar-scanner
+                        cd sonarqube && ../sonar-scanner/bin/sonar-scanner
+                    '''
+                }
+            }
+        }
     }
 
-    // To trigger the webhook manually, follow these steps:
-    // 1. Push changes to the feature branch.
-    // 2. Create a pull request to the main branch.
-    // 3. This action should trigger the webhook and Jenkins should start building.
-    // Check Jenkins logs for build details after the PR is created.
-
-    // If the webhook isn't triggered, check GitHub Settings > Webhooks for issues or test the webhook again.
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
 }
-git 
