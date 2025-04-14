@@ -26,14 +26,20 @@ pipeline {
         }
 
         stage('Run Unit Tests') {
-            steps {
-                echo "Running test.py inside Docker..."
-                script {
-                    def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                    sh "docker run --rm mohitkaila/ensf400-group7-app:${COMMIT_HASH} python test.py"
-                }
-            }
+    steps {
+        echo "Running test.py inside Docker..."
+        script {
+            def COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+            sh """
+                docker run -d -p 5000:5000 --name app-test mohitkaila/ensf400-group7-app:${COMMIT_HASH}
+                sleep 5
+                docker exec app-test python test.py
+                docker rm -f app-test
+            """
         }
+    }
+}
+
 
         stage('Push to Registry') {
             steps {
